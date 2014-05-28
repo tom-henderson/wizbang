@@ -27,7 +27,7 @@ class WBMenu(object):
 		self.modifier_groups = []
 
 	class WBItem(object):
-		def __init__(self, id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id, modifier_groups=[]):
+		def __init__(self, id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id):
 			self.id = id
 			self.local_id = local_id
 			self.name = name
@@ -37,7 +37,7 @@ class WBMenu(object):
 			self.price_4 = price_4
 			self.price_5 = price_5
 			self.price_6 = price_6
-			self.modifier_groups = modifier_groups
+			self.modifier_groups = []
 
 		def __repr__(self):
 			return "{}: {} (${})".format(self.id, self.name, self.price_1)
@@ -65,7 +65,7 @@ class WBMenu(object):
 			return "{}: {}".format(self.id, self.name)
 
 	class WBModifierGroup(object):
-		def __init__(self, id, local_id, name, forb, force, multi, prompt, proceed, items, modifiers):
+		def __init__(self, id, local_id, name, forb, force, multi, prompt, proceed, modifiers):
 			self.id = id
 			self.local_id = local_id
 			self.name = name
@@ -74,11 +74,10 @@ class WBMenu(object):
 			self.multi = multi
 			self.prompt = prompt
 			self.proceed = proceed
-			self.items = items
 			self.modifiers = modifiers
 
 		def __repr__(self):
-			return "{}: {} ({} items, {} mods)".format(self.id, self.name, len(self.items), len(self.modifiers))
+			return "{}: {} ({})".format(self.id, self.name, len(self.modifiers))
 
 	def item(self, id):
 		for item in self.items:
@@ -114,9 +113,27 @@ class WBMenu(object):
 		self.modifiers.append(self.WBModifier(id, local_id, name, forb, price))
 
 	def add_modifier_group(self, id, local_id, name, forb, force, multi, prompt, proceed, item_ids, modifier_ids):
-		items = [self.item(item_id) for item_id in item_ids]
 		modifiers = [self.modifier(modifier_id) for modifier_id in modifier_ids]
-		self.modifier_groups.append(self.WBModifierGroup(id, local_id, name, forb, force, multi, prompt, proceed, items, modifiers))
+		self.modifier_groups.append(self.WBModifierGroup(id, local_id, name, forb, force, multi, prompt, proceed, modifiers))
+		
+		for item in [self.item(item_id) for item_id in item_ids]:
+			if self.modifier_group(id) not in item.modifier_groups:
+				item.modifier_groups.append(self.modifier_group(id))
+
+	def print_menu_tree(self, mod_groups=False, modifiers=False):
+		for ig in self.item_groups:
+			print "+ {}".format(ig.name)
+			for i in ig.items:
+				print "|- {}".format(i.name)
+				if i.modifier_groups and mod_groups:
+					for mg in i.modifier_groups:
+						print "| |- {}".format(mg.name)
+						if mg.modifiers and mod_groups and modifiers:
+							for m in mg.modifiers:
+								print "| | |- {}".format(m.name)
+							print "| |"
+					print "|"
+			print
 
 class WizBang(object):
 	def __init__(self, server_url, server_port):

@@ -1,6 +1,7 @@
 #!/bin/python
 
 import requests
+from BeautifulSoup import BeautifulSoup
 
 # Properties:
 # 	menu
@@ -26,7 +27,7 @@ class WBMenu(object):
 		self.modifier_groups = []
 
 	class WBItem(object):
-		def __init__(self, id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id):
+		def __init__(self, id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id, modifier_groups=[]):
 			self.id = id
 			self.local_id = local_id
 			self.name = name
@@ -36,6 +37,7 @@ class WBMenu(object):
 			self.price_4 = price_4
 			self.price_5 = price_5
 			self.price_6 = price_6
+			self.modifier_groups = modifier_groups
 
 		def __repr__(self):
 			return "{}: {} (${})".format(self.id, self.name, self.price_1)
@@ -120,7 +122,66 @@ class WizBang(object):
 	def __init__(self, server_url, server_port):
 		self.server_url = server_url
 		self.server_port = server_port
-		self.menu = WBMenu()
+		self.menu = self.get_menu()
+
+	def get_id(self, item):
+		return [attr for attr in item.attrs if 'id' in attr[0]][0][1]
+
+	def get_menu(self):
+		data = requests.get("http://{}:{}/menu.xml".format(self.server_url, self.server_port))
+		soup = BeautifulSoup(data.text)
+		menu = WBMenu()
+
+		for item_group in soup.itemgroups.findAll("itemgroup"):
+			item_group_id = self.get_id(item_group)
+			local_id = item_group.find("localitemgroupid").text
+			name = item_group.find("name").text
+			forb = item_group.find("forb").text
+
+			menu.add_item_group(item_group_id, local_id, name, forb)
+
+		for item in soup.items.findAll("item"):
+			item_id = self.get_id(item)
+			local_id = item.find("localitemid").text
+			name = item.find("name").text
+			price_1 = item.find("price1").text
+			price_2 = item.find("price2").text
+			price_3 = item.find("price3").text
+			price_4 = item.find("price4").text
+			price_5 = item.find("price5").text
+			price_6 = item.find("price6").text
+			item_group_id = self.get_id(item.find("itemgroup"))
+
+			menu.add_item(item_id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id)
+			menu.item_group(item_group_id).items.append(menu.item(item_id))
+
+		for modifier in soup.modifiers.findAll("modifier"):
+			mod_id = self.get_id(modifier)
+			local_id = modifier.find("localmodifierid").text
+			name = modifier.find("name").text
+			forb = modifier.find("localmodifierid").text
+			price = modifier.find("price").text
+
+			menu.add_modifier(mod_id, local_id, name, forb, price)
+
+		for modifier_group in soup.modgroups.findAll("modgroup"):
+			modifier_group_id = self.get_id(modifier_group)
+			local_id = modifier_group.find("localmodgroupid").text
+			name = modifier_group.find("name").text
+			forb = modifier_group.find("forb").text
+			force = modifier_group.find("force").text
+			multi = modifier_group.find("multi").text
+			prompt = modifier_group.find("prompt").text
+			proceed = modifier_group.find("proceed").text
+			if modifier_group.items:
+				item_ids = [self.get_id(item) for item in modifier_group.items.findAll("item")]
+			if modifier_group.modifiers:
+				modifier_ids = [self.get_id(modifier) for modifier in modifier_group.modifiers.findAll("modifier")]
+
+			menu.add_modifier_group(modifier_group_id, local_id, name, forb, force, multi, prompt, proceed, item_ids, modifier_ids)
+
+		return menu
+
 
 	@property
 	def account_types(self):

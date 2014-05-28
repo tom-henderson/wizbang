@@ -10,6 +10,7 @@ import requests
 #
 # Methods:
 # 	order(customer, order, tender)
+#		send the order object to the server and updates with the results
 # 	get_account(id=id, number=number)
 #		returns an Account object
 # 	get_invoice(id=id, number=number, outletid=outletid, txtcode=txtcode)

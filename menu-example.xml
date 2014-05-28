@@ -40,7 +40,7 @@
 			<price>0.00</price>
 		</modifier>
 
-		(...)
+		<div class=""></div>
 
 	</modifiers>
 
@@ -68,3 +68,5 @@
 
 			</modifiers>
 		</modgroup>
+	</modgroups>
+</menu>

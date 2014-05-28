@@ -63,7 +63,7 @@ class WBMenu(object):
 			return "{}: {}".format(self.id, self.name)
 
 	class WBModifierGroup(object):
-		def __init__(self, id, local_id, name, forb, force, multi, prompt, proceed):
+		def __init__(self, id, local_id, name, forb, force, multi, prompt, proceed, items, modifiers):
 			self.id = id
 			self.local_id = local_id
 			self.name = name
@@ -72,8 +72,11 @@ class WBMenu(object):
 			self.multi = multi
 			self.prompt = prompt
 			self.proceed = proceed
-			self.items = []
-			self.modifiers = []
+			self.items = items
+			self.modifiers = modifiers
+
+		def __repr__(self):
+			return "{}: {} ({} items, {} mods)".format(self.id, self.name, len(self.items), len(self.modifiers))
 
 	def item(self, id):
 		for item in self.items:
@@ -108,8 +111,10 @@ class WBMenu(object):
 	def add_modifier(self, id, local_id, name, forb, price):
 		self.modifiers.append(self.WBModifier(id, local_id, name, forb, price))
 
-	def add_modifier_group(self, id, local_id, name, forb, force, multi, prompt, proceed):
-		return
+	def add_modifier_group(self, id, local_id, name, forb, force, multi, prompt, proceed, item_ids, modifier_ids):
+		items = [self.item(item_id) for item_id in item_ids]
+		modifiers = [self.modifier(modifier_id) for modifier_id in modifier_ids]
+		self.modifier_groups.append(self.WBModifierGroup(id, local_id, name, forb, force, multi, prompt, proceed, items, modifiers))
 
 class WizBang(object):
 	def __init__(self, server_url, server_port):

@@ -19,14 +19,14 @@ from BeautifulSoup import BeautifulSoup
 # 	get_print_messages(outlet=outletid)
 #		returns a PrintMessages object
 
-class WBMenu(object):
+class Menu(object):
 	def __init__(self):
 		self.items = []
 		self.item_groups = []
 		self.modifiers = []
 		self.modifier_groups = []
 
-	class WBItem(object):
+	class Item(object):
 		def __init__(self, id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id):
 			self.id = id
 			self.local_id = local_id
@@ -42,7 +42,7 @@ class WBMenu(object):
 		def __repr__(self):
 			return "{}: {} (${})".format(self.id, self.name, self.price_1)
 
-	class WBItemGroup(object):
+	class ItemGroup(object):
 		def __init__(self, id, local_id, name, forb):
 			self.id = id
 			self.local_id = local_id
@@ -53,7 +53,7 @@ class WBMenu(object):
 		def __repr__(self):
 			return "{}: {} ({})".format(self.id, self.name, len(self.items))
 
-	class WBModifier(object):
+	class Modifier(object):
 		def __init__(self, id, local_id, name, forb, price):
 			self.id = id
 			self.local_id = local_id
@@ -64,7 +64,7 @@ class WBMenu(object):
 		def __repr__(self):
 			return "{}: {}".format(self.id, self.name)
 
-	class WBModifierGroup(object):
+	class ModifierGroup(object):
 		def __init__(self, id, local_id, name, forb, force, multi, prompt, proceed, modifiers):
 			self.id = id
 			self.local_id = local_id
@@ -104,17 +104,17 @@ class WBMenu(object):
 		return None
 
 	def add_item(self, id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id):
-		self.items.append(self.WBItem(id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id))
+		self.items.append(self.Item(id, local_id, name, price_1, price_2, price_3, price_4, price_5, price_6, item_group_id))
 
 	def add_item_group(self, id, local_id, name, forb):
-		self.item_groups.append(self.WBItemGroup(id, local_id, name, forb))
+		self.item_groups.append(self.ItemGroup(id, local_id, name, forb))
 
 	def add_modifier(self, id, local_id, name, forb, price):
-		self.modifiers.append(self.WBModifier(id, local_id, name, forb, price))
+		self.modifiers.append(self.Modifier(id, local_id, name, forb, price))
 
 	def add_modifier_group(self, id, local_id, name, forb, force, multi, prompt, proceed, item_ids, modifier_ids):
 		modifiers = [self.modifier(modifier_id) for modifier_id in modifier_ids]
-		self.modifier_groups.append(self.WBModifierGroup(id, local_id, name, forb, force, multi, prompt, proceed, modifiers))
+		self.modifier_groups.append(self.ModifierGroup(id, local_id, name, forb, force, multi, prompt, proceed, modifiers))
 		
 		for item in [self.item(item_id) for item_id in item_ids]:
 			if self.modifier_group(id) not in item.modifier_groups:
@@ -147,7 +147,7 @@ class WizBang(object):
 	def get_menu(self):
 		data = requests.get("http://{}:{}/menu.xml".format(self.server_url, self.server_port))
 		soup = BeautifulSoup(data.text)
-		menu = WBMenu()
+		menu = Menu()
 
 		for item_group in soup.itemgroups.findAll("itemgroup"):
 			item_group_id = self.get_id(item_group)
@@ -190,8 +190,10 @@ class WizBang(object):
 			multi = modifier_group.find("multi").text
 			prompt = modifier_group.find("prompt").text
 			proceed = modifier_group.find("proceed").text
+
 			if modifier_group.items:
 				item_ids = [self.get_id(item) for item in modifier_group.items.findAll("item")]
+
 			if modifier_group.modifiers:
 				modifier_ids = [self.get_id(modifier) for modifier in modifier_group.modifiers.findAll("modifier")]
 

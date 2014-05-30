@@ -135,6 +135,38 @@ class Menu(object):
 					print "|"
 			print
 
+class Order(object):
+	def __init__(self):
+		self.items = []
+
+	def add_item(self, item, quantity):
+		self.items.append({
+					"item": item,
+					"quantity": quantity,
+				})
+
+
+class Customer(object):
+	def __init__(self):
+		self.id = ""
+		self.name = ""
+		self.surname = ""
+		self.firstname = ""
+		self.middlename = ""
+		self.title = ""
+		self.accountid = ""
+		self.phone = ""
+		self.mobile = ""
+		self.workphone = ""
+		self.fax = ""
+		self.address_1 = ""
+		self.address_2 = ""
+		self.address_3 = ""
+		self.address_4 = ""
+		self.address_5 = ""
+		self.location = ""
+		self.notes = ""
+
 class WizBang(object):
 	def __init__(self, server_url, server_port):
 		self.server_url = server_url
@@ -231,38 +263,6 @@ class WizBang(object):
 
 	def get_print_messages(self, outlet=None):
 		return
-
-class Order(object):
-	def __init__(self):
-		self.items = []
-
-	def add_item(self, item, quantity):
-		self.items.append({
-					"item": item,
-					"quantity": quantity,
-				})
-
-
-class Customer(object):
-	def __init__(self):
-		self.id = ""
-		self.name = ""
-		self.surname = ""
-		self.firstname = ""
-		self.middlename = ""
-		self.title = ""
-		self.accountid = ""
-		self.phone = ""
-		self.mobile = ""
-		self.workphone = ""
-		self.fax = ""
-		self.address_1 = ""
-		self.address_2 = ""
-		self.address_3 = ""
-		self.address_4 = ""
-		self.address_5 = ""
-		self.location = ""
-		self.notes = ""
 
 class Tender(object):
 	def __init__(self):

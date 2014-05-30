@@ -201,6 +201,20 @@ class WizBang(object):
 
 		return menu
 
+	def place_order(self, order, customer, on_account=False):
+		payload = {
+			"customerid": customer.id,
+			"epd": 2 if on_account else 3,
+			"olcount": len(order.items),
+			"tenderpayment": 0 if on_account else 1,
+			"tenderaccount": 0 if on_account else 1,
+		}
+
+		for n, line in enumerate(order.items):
+			payload["ol{}itemid".format(n + 1)] = line['item'].id
+			payload["ol{}qty"] = line['quantity']
+
+		return payload
 
 	@property
 	def account_types(self):
@@ -218,22 +232,46 @@ class WizBang(object):
 	def get_print_messages(self, outlet=None):
 		return
 
+class Order(object):
+	def __init__(self):
+		self.items = []
+
+	def add_item(self, item, quantity):
+		self.items.append({
+					"item": item,
+					"quantity": quantity,
+				})
+
+
+class Customer(object):
+	def __init__(self):
+		self.id = ""
+		self.name = ""
+		self.surname = ""
+		self.firstname = ""
+		self.middlename = ""
+		self.title = ""
+		self.accountid = ""
+		self.phone = ""
+		self.mobile = ""
+		self.workphone = ""
+		self.fax = ""
+		self.address_1 = ""
+		self.address_2 = ""
+		self.address_3 = ""
+		self.address_4 = ""
+		self.address_5 = ""
+		self.location = ""
+		self.notes = ""
+
+class Tender(object):
+	def __init__(self):
+		return
+
 class Account(object):
 	def __init__(self):
 		return
 
 class PrintMessages(object):
-	def __init__(self):
-		return
-
-class Customer(object):
-	def __init__(self):
-		return
-
-class Order(object):
-	def __init__(self):
-		return
-
-class Tender(object):
 	def __init__(self):
 		return

@@ -171,12 +171,12 @@ class WizBang(object):
 	def __init__(self, server_url, server_port):
 		self.server_url = server_url
 		self.server_port = server_port
-		self.menu = self.get_menu()
+		self.menu = self.load_menu()
 
 	def get_id(self, item):
 		return [attr for attr in item.attrs if 'id' in attr[0]][0][1]
 
-	def get_menu(self):
+	def load_menu(self):
 		data = requests.get("http://{}:{}/menu.xml".format(self.server_url, self.server_port))
 		soup = BeautifulSoup(data.text)
 		menu = Menu()

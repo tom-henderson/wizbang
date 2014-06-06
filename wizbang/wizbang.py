@@ -251,13 +251,13 @@ class WizBang(object):
 
 		return payload
 
-	def get_invoice(self, id=None, invoicenumber=None, outletid=None, txtcode=None):
+	def get_invoice(self, id=None, number=None, outlet=None, txtcode=None):
 		payload = {}
 		if id is not None:
 			payload['id'] = id
-		elif invoicenumber is not None and outletid is not None:
-			payload['invoicenumber'] = invoicenumber
-			payload['outletid'] = outletid
+		elif number is not None and outlet is not None:
+			payload['invoicenumber'] = number
+			payload['outletid'] = outlet
 		elif txtcode is not None:
 			payload['txtcode'] = txtcode
 		else:
@@ -266,20 +266,19 @@ class WizBang(object):
 		data = self._api_request('invoice', payload=payload)
 		soup = BeautifulSoup(data.text)
 
-		return True
-		
+		return soup
 
 	@property
 	def account_types(self):
-		return
+		data = _api_request('accounttypes')
+		soup = BeautifulSoup(data.text)
+
+		return soup
 
 	def order(self, customer=None, order=None, tender=None):
 		return
 
 	def get_account(self, id=None, number=None):
-		return
-
-	def get_invoice(self, id=None, number=None, outlet=None, txtcode=None):
 		return
 
 	def get_print_messages(self, outlet=None):

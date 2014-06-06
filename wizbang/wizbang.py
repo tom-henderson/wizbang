@@ -173,11 +173,14 @@ class WizBang(object):
 		self.server_port = server_port
 		self.menu = self.load_menu()
 
+	def _api_request(self, path, payload=None):
+		return requests.get("http://{}:{}/{}.xml".format(self.server_url, self.server_port, path), params=payload)
+
 	def get_id(self, item):
 		return [attr for attr in item.attrs if 'id' in attr[0]][0][1]
 
 	def load_menu(self):
-		data = requests.get("http://{}:{}/menu.xml".format(self.server_url, self.server_port))
+		data = self._api_request('menu')
 		soup = BeautifulSoup(data.text)
 		menu = Menu()
 
@@ -247,6 +250,24 @@ class WizBang(object):
 			payload["ol{}qty"] = line['quantity']
 
 		return payload
+
+	def get_invoice(self, id=None, invoicenumber=None, outletid=None, txtcode=None):
+		payload = {}
+		if id is not None:
+			payload['id'] = id
+		elif invoicenumber is not None and outletid is not None:
+			payload['invoicenumber'] = invoicenumber
+			payload['outletid'] = outletid
+		elif txtcode is not None:
+			payload['txtcode'] = txtcode
+		else:
+			return None
+
+		data = self._api_request('invoice', payload=payload)
+		soup = BeautifulSoup(data.text)
+
+		return True
+		
 
 	@property
 	def account_types(self):

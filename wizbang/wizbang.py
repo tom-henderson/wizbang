@@ -270,7 +270,7 @@ class WizBang(object):
 
 	@property
 	def account_types(self):
-		data = _api_request('accounttypes')
+		data = self._api_request('accounttypes')
 		soup = BeautifulSoup(data.text)
 
 		return soup

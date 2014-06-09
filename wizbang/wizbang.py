@@ -145,7 +145,6 @@ class Order(object):
 					"quantity": quantity,
 				})
 
-
 class Customer(object):
 	def __init__(self):
 		self.id = ""
@@ -245,9 +244,12 @@ class WizBang(object):
 			"tenderaccount": 0 if on_account else 1,
 		}
 
+		if on_account:
+			payload['customeraccountid'] = customer.accountid
+
 		for n, line in enumerate(order.items):
 			payload["ol{}itemid".format(n + 1)] = line['item'].id
-			payload["ol{}qty"] = line['quantity']
+			payload["ol{}qty".format(n + 1)] = line['quantity']
 
 		return payload
 

@@ -256,7 +256,7 @@ class WizBang(object):
 	def get_invoice(self, id=None, number=None, outlet=None, txtcode=None):
 		payload = {}
 		if id is not None:
-			payload['id'] = id
+			payload['invoiceid'] = id
 		elif number is not None and outlet is not None:
 			payload['invoicenumber'] = number
 			payload['outletid'] = outlet

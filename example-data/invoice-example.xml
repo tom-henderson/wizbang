@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<invoice id="1">
+	<invoiceno>1</invoiceno>
+	<outletid>1</outletid>
+	<invoicetype>Invoice</invoicetype>
+
+	<grouptype type="Cash Sale">
+		<wheninvoiced>12112010 16:37:27</wheninvoiced>
+
+		<whoinvoice id="1">
+			<name>WizBang</name>
+		</whoinvoice>
+
+		<whereinvoiced>Cashier</whereinvoiced>
+
+		<invoicelines>
+			<invoiceline id="33">
+				<itemgroup id="1">
+					<item id="304">
+						<itemabbrev>Banana Split</itemabbrev>
+						<unitprice>9.50</unitprice>
+						<ilamount>19.00</ilamount>
+						<discountamount>0.00</discountamount>
+						<salestax>2.11</salestax>
+					</item>
+				</itemgroup> 
+			</invoiceline>
+
+			(...)
+
+			<food>597.00</food>
+			<balancedue>597.00</balancedue>
+			<includesgst>66.33</includesgst>
+		</invoicelines>
+
+		<tenderlines>
+			<tenderline id="1">
+				<tenderlinetype>Cash</tenderlinetype>
+				<tenderlineamount>597.00</tenderlineamount>
+				<tenderlinetip>0.00</tenderlinetip>
+				<roundingamount>0.00</roundingamount>
+			</tenderline>
+
+			(...)
+
+			<tendered>597.00</tendered>
+
+		</tenderlines>
+	</grouptype>
+</invoice>

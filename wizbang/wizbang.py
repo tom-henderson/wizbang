@@ -173,13 +173,13 @@ class WizBang(object):
 		self.menu = self.load_menu()
 
 	def _api_request(self, path, payload=None):
-		return requests.get("http://{}:{}/{}.xml".format(self.server_url, self.server_port, path), params=payload)
+		return requests.get("http://{}:{}/{}".format(self.server_url, self.server_port, path), params=payload)
 
 	def get_id(self, item):
 		return [attr for attr in item.attrs if 'id' in attr[0]][0][1]
 
 	def load_menu(self):
-		data = self._api_request('menu')
+		data = self._api_request('menu.xml')
 		soup = BeautifulSoup(data.text)
 		menu = Menu()
 
@@ -272,7 +272,7 @@ class WizBang(object):
 
 	@property
 	def account_types(self):
-		data = self._api_request('accounttypes')
+		data = self._api_request('accounttypes.xml')
 		soup = BeautifulSoup(data.text)
 
 		return soup

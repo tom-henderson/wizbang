@@ -166,6 +166,57 @@ class Customer(object):
 		self.location = ""
 		self.notes = ""
 
+class Invoice(object):
+	class InvoiceLine(object):
+		def __init__(self):
+			self.invoice_line_id = None
+			self.item_id = None
+			self.item_abbrev = None
+			self.unit_price = None
+			self.total = None
+			self.discount = None
+			self.sales_tax = None
+			self.surcharge = None
+			self.weight_item = None
+			self.quantity = self.total / self.unit_price
+
+	class TenderLine(object):
+		def __init__(self):
+			self.tender_line_id = None
+			self.tender_line_type = None
+			self.tender_line_amount = None
+			self.tender_line_tip = None
+			self.rounding_amount = None
+
+	def __init__(self):
+		self.id = None
+		self.invoice_number = None
+		self.outlet_id = None
+		self.invoice_type = None # Invoice or Credit Note
+		self.refund_note = None # Only if self.invoicetype = Credit Note
+		self.account_id = None # If loyalty or charge account
+		self.group_type = None # Table, Tab or Cash Sale
+		self.group_id = None # If self.grouptype = Table or Tab
+		self.table_number = None # If set
+		self.group_name = None # If set
+		self.when_invoiced = None
+		self.staff_id = None # Field is whoinvoice
+		self.staff_name = None # Staff Name
+		self.where_invoiced = None # Terminal invoiced from
+
+		self.invoice_lines = []
+		self.subtotal = None
+		self.less_discount = None # self.subtotal - discount (WTF?)
+		self.food = None
+		self.beverage = None
+		self.balance_due = None
+		self.sales_tax = None
+
+		self.tender_lines = []
+		self.tendered = None
+		self.change = None
+		self.on_account = None
+
 class WizBang(object):
 	def __init__(self, server_url, server_port):
 		self.server_url = server_url
@@ -177,6 +228,11 @@ class WizBang(object):
 
 	def get_id(self, item):
 		return [attr for attr in item.attrs if 'id' in attr[0]][0][1]
+
+	def get_value(self, item, key):
+		if item.find(key):
+			return item.find(key).text
+		return None
 
 	def load_menu(self):
 		data = self._api_request('menu.xml')
@@ -268,7 +324,38 @@ class WizBang(object):
 		data = self._api_request('invoice', payload=payload)
 		soup = BeautifulSoup(data.text)
 
-		return soup
+		invoice = soup.findAll('invoice')[1]
+		_id = self.get_id(invoice)
+		_invoice_number = self.get_value(invoice, "invoiceno")
+		_outletid = self.get_value(invoice, "outletid")
+		_invoice_type = self.get_value(invoice, "invoicetype")
+		_refund_note = self.get_value(invoice, "refundnote")
+		_account_id = self.get_value(invoice, "accountid")
+
+		group = invoice.find("grouptype")
+		_group_type = [attr for attr in group.attrs if 'type' in attr[0]][0][1] # Yuck
+		_group_id = self.get_value(group, "groupid")
+		_table_number = self.get_value(group, "tableno")
+		_group_name = self.get_value(group, "groupname")
+		_when_invoiced = self.get_value(group, "wheninvoiced")
+
+		who = group.find("whoinvoice")
+		_staff_id = self.get_id(who)
+		_staff_name = self.get_value(who, "name")
+		_where_invoiced = self.get_value(who, "whereinvoiced")
+
+		invoice_lines = group.find("invoicelines")
+		_subtotal = self.get_value(invoice_lines, "subtotal")
+		_less_discount = self.get_value(invoice_lines, "lessdiscount")
+		_food = self.get_value(invoice_lines, "food")
+		_beverage = self.get_value(invoice_lines, "bev")
+		_balance_due = self.get_value(invoice_lines, "balancedue")
+		_sales_tax = self.get_value(invoice_lines, "includesgst")
+
+		tender_lines = group.find("tenderlines")
+		_tendered = self.get_value(tender_lines, "tendered")
+		_change = self.get_value(tender_lines, "change")
+		_on_account = self.get_value(tender_lines, "onaccount")
 
 	@property
 	def account_types(self):

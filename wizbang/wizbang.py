@@ -170,6 +170,7 @@ class Invoice(object):
 	class InvoiceLine(object):
 		def __init__(self):
 			self.invoice_line_id = None
+			self.item_group_id = None
 			self.item_id = None
 			self.item_abbrev = None
 			self.unit_price = None
@@ -178,7 +179,10 @@ class Invoice(object):
 			self.sales_tax = None
 			self.surcharge = None
 			self.weight_item = None
-			self.quantity = self.total / self.unit_price
+		
+		@property
+		def quantity(self):
+			return float(self.total) / float(self.unit_price)
 
 	class TenderLine(object):
 		def __init__(self):
@@ -325,37 +329,62 @@ class WizBang(object):
 		soup = BeautifulSoup(data.text)
 
 		invoice = soup.findAll('invoice')[1]
-		_id = self.get_id(invoice)
-		_invoice_number = self.get_value(invoice, "invoiceno")
-		_outletid = self.get_value(invoice, "outletid")
-		_invoice_type = self.get_value(invoice, "invoicetype")
-		_refund_note = self.get_value(invoice, "refundnote")
-		_account_id = self.get_value(invoice, "accountid")
-
 		group = invoice.find("grouptype")
-		_group_type = [attr for attr in group.attrs if 'type' in attr[0]][0][1] # Yuck
-		_group_id = self.get_value(group, "groupid")
-		_table_number = self.get_value(group, "tableno")
-		_group_name = self.get_value(group, "groupname")
-		_when_invoiced = self.get_value(group, "wheninvoiced")
-
 		who = group.find("whoinvoice")
-		_staff_id = self.get_id(who)
-		_staff_name = self.get_value(who, "name")
-		_where_invoiced = self.get_value(who, "whereinvoiced")
-
 		invoice_lines = group.find("invoicelines")
-		_subtotal = self.get_value(invoice_lines, "subtotal")
-		_less_discount = self.get_value(invoice_lines, "lessdiscount")
-		_food = self.get_value(invoice_lines, "food")
-		_beverage = self.get_value(invoice_lines, "bev")
-		_balance_due = self.get_value(invoice_lines, "balancedue")
-		_sales_tax = self.get_value(invoice_lines, "includesgst")
+	
+		i = Invoice()
+		i.id = self.get_id(invoice)
+		i.invoice_number = self.get_value(invoice, "invoiceno")
+		i.outletid = self.get_value(invoice, "outletid")
+		i.invoice_type = self.get_value(invoice, "invoicetype")
+		i.refund_note = self.get_value(invoice, "refundnote")
+		i.account_id = self.get_value(invoice, "accountid")
+
+		i.group_type = [attr for attr in group.attrs if 'type' in attr[0]][0][1] # Yuck
+		i.group_id = self.get_value(group, "groupid")
+		i.table_number = self.get_value(group, "tableno")
+		i.group_name = self.get_value(group, "groupname")
+		i.when_invoiced = self.get_value(group, "wheninvoiced")
+
+		i.staff_id = self.get_id(who)
+		i.staff_name = self.get_value(who, "name")
+		i.where_invoiced = self.get_value(who, "whereinvoiced")
+
+		for invoice_line in invoice_lines.findAll("invoiceline"):
+			l = Invoice.InvoiceLine()
+			l.invoice_line_id = self.get_id(invoice_line)
+			l.item_group = self.get_id(invoice_line.find("itemgroup"))
+			l.item_id = self.get_id(invoice_line.find("item"))
+			l.item_abbrev = self.get_value(invoice_line, "itemabbrev") 
+			l.unit_price = self.get_value(invoice_line, "unitprice")
+			l.total = self.get_value(invoice_line, "ilamount")
+			l.discount = self.get_value(invoice_line, "discountamount")
+			l.sales_tax = self.get_value(invoice_line, "salestax")
+			i.invoice_lines.append(l)
+
+		i.subtotal = self.get_value(invoice_lines, "subtotal")
+		i.less_discount = self.get_value(invoice_lines, "lessdiscount")
+		i.beverage = self.get_value(invoice_lines, "bev")
+		i.sales_tax = self.get_value(invoice_lines, "includesgst")
+		i.food = self.get_value(invoice_lines, "food")
+		i.balance_due = self.get_value(invoice_lines, "balancedue")
 
 		tender_lines = group.find("tenderlines")
-		_tendered = self.get_value(tender_lines, "tendered")
-		_change = self.get_value(tender_lines, "change")
-		_on_account = self.get_value(tender_lines, "onaccount")
+		for tender_line in tender_lines.findAll("tenderline"):
+			t = Invoice.TenderLine()
+			t.tender_line_id = self.get_id(tender_line)
+			t.tender_line_type = self.get_value(tender_line, "tenderlinetype")
+			t.tender_line_amount = self.get_value(tender_line, "tenderlineamount")
+			t.tender_line_tip = self.get_value(tender_line, "tenderlinetip")
+			t.rounding_amount = self.get_value(tender_line, "roundingamount")
+			i.tender_lines.append(t)
+
+		i.tendered = self.get_value(tender_lines, "tendered")
+		i.change = self.get_value(tender_lines, "change")
+		i.on_account = self.get_value(tender_lines, "onaccount")
+
+		return i
 
 	@property
 	def account_types(self):

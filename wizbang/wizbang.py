@@ -184,6 +184,17 @@ class Invoice(object):
 		def quantity(self):
 			return float(self.total) / float(self.unit_price)
 
+		def __str__(self):
+			line = "{} x {} @ {}:".format(
+				self.quantity,
+				self.item_abbrev,
+				self.unit_price
+			)
+			return "{:<50} {}".format(line, self.total)
+
+		def __repr__(self):
+			return self.__str__()
+
 	class TenderLine(object):
 		def __init__(self):
 			self.tender_line_id = None
@@ -191,6 +202,15 @@ class Invoice(object):
 			self.tender_line_amount = None
 			self.tender_line_tip = None
 			self.rounding_amount = None
+
+		def __str__(self):
+			return "{}: {}".format(
+				self.tender_line_type,
+				self.tender_line_amount
+			)
+
+		def __repr__(self):
+			return self.__str__()
 
 	def __init__(self):
 		self.id = None
@@ -330,8 +350,9 @@ class WizBang(object):
 
 		invoice = soup.findAll('invoice')[1]
 		group = invoice.find("grouptype")
-		who = group.find("whoinvoice")
-		invoice_lines = group.find("invoicelines")
+		who = invoice.find("whoinvoice")
+		invoice_lines = invoice.find("invoicelines")
+		tender_lines = invoice.find("tenderlines")
 	
 		i = Invoice()
 		i.id = self.get_id(invoice)
@@ -340,16 +361,16 @@ class WizBang(object):
 		i.invoice_type = self.get_value(invoice, "invoicetype")
 		i.refund_note = self.get_value(invoice, "refundnote")
 		i.account_id = self.get_value(invoice, "accountid")
+		i.when_invoiced = self.get_value(invoice, "wheninvoiced")
+		i.where_invoiced = self.get_value(invoice, "whereinvoiced")
 
 		i.group_type = [attr for attr in group.attrs if 'type' in attr[0]][0][1] # Yuck
 		i.group_id = self.get_value(group, "groupid")
 		i.table_number = self.get_value(group, "tableno")
 		i.group_name = self.get_value(group, "groupname")
-		i.when_invoiced = self.get_value(group, "wheninvoiced")
 
 		i.staff_id = self.get_id(who)
 		i.staff_name = self.get_value(who, "name")
-		i.where_invoiced = self.get_value(who, "whereinvoiced")
 
 		for invoice_line in invoice_lines.findAll("invoiceline"):
 			l = Invoice.InvoiceLine()
@@ -365,12 +386,11 @@ class WizBang(object):
 
 		i.subtotal = self.get_value(invoice_lines, "subtotal")
 		i.less_discount = self.get_value(invoice_lines, "lessdiscount")
-		i.beverage = self.get_value(invoice_lines, "bev")
+		i.beverage = self.get_value(invoice_lines, "beverage")
 		i.sales_tax = self.get_value(invoice_lines, "includesgst")
 		i.food = self.get_value(invoice_lines, "food")
 		i.balance_due = self.get_value(invoice_lines, "balancedue")
 
-		tender_lines = group.find("tenderlines")
 		for tender_line in tender_lines.findAll("tenderline"):
 			t = Invoice.TenderLine()
 			t.tender_line_id = self.get_id(tender_line)

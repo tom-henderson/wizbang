@@ -221,16 +221,16 @@ class Invoice(object):
 		self.account_id = None # If loyalty or charge account
 		self.group_type = None # Table, Tab or Cash Sale
 		self.group_id = None # If self.grouptype = Table or Tab
-		self.table_number = None # If set
-		self.group_name = None # If set
+		self.table_number = None # If self.grouptype = Table or Tab
+		self.group_name = None # Can be blank
 		self.when_invoiced = None
 		self.staff_id = None # Field is whoinvoice
-		self.staff_name = None # Staff Name
+		self.staff_name = None
 		self.where_invoiced = None # Terminal invoiced from
-
+		
 		self.invoice_lines = []
 		self.subtotal = None
-		self.less_discount = None # self.subtotal - discount (WTF?)
+		self.less_discount = None
 		self.food = None
 		self.beverage = None
 		self.balance_due = None
@@ -240,6 +240,12 @@ class Invoice(object):
 		self.tendered = None
 		self.change = None
 		self.on_account = None
+
+	@property
+	def total_discount(self):
+		if self.less_discount:
+			return float(self.subtotal) - float(self.less_discount)
+		return 0.0
 
 class WizBang(object):
 	def __init__(self, server_url, server_port):
@@ -357,7 +363,7 @@ class WizBang(object):
 		i = Invoice()
 		i.id = self.get_id(invoice)
 		i.invoice_number = self.get_value(invoice, "invoiceno")
-		i.outletid = self.get_value(invoice, "outletid")
+		i.outlet_id = self.get_value(invoice, "outletid")
 		i.invoice_type = self.get_value(invoice, "invoicetype")
 		i.refund_note = self.get_value(invoice, "refundnote")
 		i.account_id = self.get_value(invoice, "accountid")
